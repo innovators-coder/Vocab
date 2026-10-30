@@ -37,16 +37,18 @@ var en={
 };
 var ko={
  base:function(t){return String(t||'').normalize('NFC').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'')},
- one:function(h,x){var a=ko.base(h),b=ko.base(x);return a&&a==b?'exact':null}
+ one:function(h,x){var a=ko.base(h),b=ko.base(x);return a&&b&&a.length%b.length==0&&a==new Array(a.length/b.length+1).join(b)?'exact':null}
 };
 var L={en:en,ko:ko};
+/* Said the answer more than once (to go to go to go): every part must match safely, then it counts as one answer. */
+en.rep=function(h,x){var p=String(h||'').trim().split(/\s+/);if(p.length<2)return null;for(var k=2;k<=10;k++){if(p.length%k)continue;var z=p.length/k,w=null,ok=true;for(var j=0;j<k&&ok;j++){var q=en.one(p.slice(j*z,(j+1)*z).join(' '),x,false);if(!q||SAFE.indexOf(q)<0)ok=false;else if(!w||RANK.indexOf(q)>RANK.indexOf(w))w=q}if(ok)return w}return null};
 /* Expected answer -> accepted variants. Split on / , ; and also try it without (bracket text). */
 function variants(s){var o=[];String(s||'').replace(/(\d),(?=\d{3}\b)/g,'$1').split(/[\/,;]/).forEach(function(p){p=p.trim();if(!p)return;o.push(p);var q=p.replace(/\([^)]*\)/g,' ').replace(/\s+/g,' ').trim();if(q&&q!=p)o.push(q)});return o.filter(function(x,i,a){return a.indexOf(x)==i})}
 var RANK=['exact','number','homophone','spacing','plural','near'],SAFE=['exact','number','homophone','spacing'];
 /* judge(expectedText, [{t:transcript,c:confidence}], 'en'|'ko', {interim:bool}) -> {r:'ok'|'no'|'unsure', how, idx, heard}
    Alternatives after the first one may only match safely. 'near' is never accepted: it returns 'unsure' (ask to repeat). */
 function judge(exp,alts,lang,opt){opt=opt||{};var G=L[lang]||en,V=variants(exp),best=null,near=null;
- (alts||[]).forEach(function(a,i){var c=a.c;if(i>0&&c>0&&c<.2)return;V.forEach(function(v){var how=G.one(a.t,v,i==0);if(!how)return;
+ (alts||[]).forEach(function(a,i){var c=a.c;if(i>0&&c>0&&c<.2)return;V.forEach(function(v){var how=G.one(a.t,v,i==0)||(G.rep?G.rep(a.t,v):null);if(!how)return;
   if(how=='near'){if(!near)near={how:how,idx:i,heard:a.t};return}
   if(i>0&&SAFE.indexOf(how)<0)return;if(opt.interim&&SAFE.indexOf(how)<0)return;
   if(!best||RANK.indexOf(how)<RANK.indexOf(best.how))best={how:how,idx:i,heard:a.t,v:v}})});
