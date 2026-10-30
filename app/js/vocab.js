@@ -6,6 +6,8 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 function dk(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
 function today(){return dk(new Date())}
 function norm(s){return String(s||'').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'')}
+/* English match for Mic: heard '2 go' / 'two go' = 'to go'; '4' = 'for'; leading 'to' ignored. */
+function en(s){return norm(String(s||'').toLowerCase().replace(/\b(2|two|too)\b/g,'to').replace(/\b4\b/g,'for').replace(/\b1\b/g,'one').replace(/^\s*to\s+(?=\S)/,''))}
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
 var SEED=[['Places',[['사무실','sa-mu-sil','office'],['공장','gong-jang','factory'],['병원','byeong-won','hospital'],['시장','si-jang','market'],['학교','hak-gyo','school'],['식당','sik-dang','restaurant'],['은행','eun-haeng','bank'],['집','jip','house']]],
 ['Greetings',[['안녕하세요','an-nyeong-ha-se-yo','hello'],['감사합니다','gam-sa-ham-ni-da','thank you'],['죄송합니다','joe-song-ham-ni-da','I am sorry'],['네','ne','yes'],['아니요','a-ni-yo','no'],['잘 부탁합니다','jal bu-tak-ham-ni-da','please take care of me']]],
@@ -57,7 +59,8 @@ function amic(){clearTimeout(AT);var n=0;(function go(){if(!SR||V.s.mode!='mic'|
 document.addEventListener('click',function(){setTimeout(amic,80)});
 document.addEventListener('visibilitychange',function(){if(document.hidden){if(S.ls)clr()}else setTimeout(amic,300)});
 function mic(){var w=cur();if(!w||S.ls)return;S.blk=0;try{var r=new SR();var ke=V.s.dir=='ke';r.lang=ke?'en-US':'ko-KR';r.maxAlternatives=5;S.rec=r;S.ls=1;S.err='';S.rt=0;
- r.interimResults=true;r.onresult=function(e){if(!e.results[0].isFinal){var lv=document.getElementById('vlive');if(lv)lv.textContent=e.results[0][0].transcript;return}var t=[];for(var i=0;i<e.results[0].length;i++)t.push(e.results[0][i].transcript);S.ls=0;S.heard=t[0];answer(t.some(function(x){if(ke)return w.e.split(/[\/,;]/).some(function(p){return norm(p)==norm(x)||norm(p.replace(/\(.*\)/,''))==norm(x)});return norm(x)==norm(w.k)}),0)};
+ r.interimResults=true;var hit=function(x){if(ke)return w.e.split(/[\/,;]/).some(function(p){return en(p)==en(x)||en(p.replace(/\(.*\)/,''))==en(x)});return norm(x)==norm(w.k)};
+ r.onresult=function(e){var R=e.results[0],fin=R.isFinal;if(!fin){var lv=document.getElementById('vlive');if(lv)lv.textContent=R[0].transcript;if(!hit(R[0].transcript))return}var t=[];for(var i=0;i<R.length;i++)t.push(R[i].transcript);S.ls=0;S.heard=t[0];try{r.stop()}catch(x){}answer(t.some(hit),0)};
  r.onerror=function(e){if(e.error=='no-speech'&&S.rt<3)return;if(e.error=='not-allowed'||e.error=='service-not-allowed')S.blk=1;S.ls=0;S.err=(e.error=='not-allowed'||e.error=='service-not-allowed')?'Mic blocked. Allow mic access (needs https or localhost), or use self-check.':e.error=='audio-capture'?'No microphone found, or another app is using it.':e.error=='network'?'No internet. Speech recognition needs a connection.':'Did not hear you. Try again.';if(!S.res)rc()};
  r.onend=function(){if(S.ls&&!S.res){if(S.rt<3&&S.rec===r){S.rt++;try{r.start();return}catch(x){}}S.ls=0;S.err='Did not hear you. Try again.';rc()}};r.start();rc()}catch(x){S.nm=1;S.ls=0;rc()}}
 function ansb(w,ke){var rm=w.r;return '<div class=vans>'+(ke?esc(w.e):'<span class=kr>'+esc(w.k)+'</span>'+(rm?' <small>'+esc(w.r)+'</small>':''))+(w.x?'<div class=vex>'+esc(w.x)+'</div>':'')+'</div>'}
