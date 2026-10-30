@@ -49,8 +49,8 @@ function judge(exp,alts,lang,opt){opt=opt||{};var G=L[lang]||en,V=variants(exp),
  (alts||[]).forEach(function(a,i){var c=a.c;if(i>0&&c>0&&c<.2)return;V.forEach(function(v){var how=G.one(a.t,v,i==0);if(!how)return;
   if(how=='near'){if(!near)near={how:how,idx:i,heard:a.t};return}
   if(i>0&&SAFE.indexOf(how)<0)return;if(opt.interim&&SAFE.indexOf(how)<0)return;
-  if(!best||RANK.indexOf(how)<RANK.indexOf(best.how))best={how:how,idx:i,heard:a.t}})});
- if(best)return {r:'ok',how:best.how,idx:best.idx,heard:best.heard};
+  if(!best||RANK.indexOf(how)<RANK.indexOf(best.how))best={how:how,idx:i,heard:a.t,v:v}})});
+ if(best)return {r:'ok',how:best.how,idx:best.idx,heard:best.heard,v:best.v};
  var h0=alts&&alts[0]?alts[0].t:'';if(near&&!opt.interim)return {r:'unsure',how:'near',idx:0,heard:near.heard};
  return {r:'no',how:'',idx:-1,heard:h0}}
 return {judge:judge,variants:variants,lang:L,nw:nw}})();
@@ -106,7 +106,7 @@ function amic(){clearTimeout(AT);var n=0;(function go(){if(!SR||V.s.mode!='mic'|
 document.addEventListener('click',function(){setTimeout(amic,80)});
 document.addEventListener('visibilitychange',function(){if(document.hidden){if(S.ls)clr()}else setTimeout(amic,300)});
 function mic(){var w=cur();if(!w||S.ls)return;S.blk=0;try{var r=new SR();var ke=V.s.dir=='ke';r.lang=ke?'en-US':'ko-KR';r.maxAlternatives=5;try{if('phrases' in r&&window.SpeechRecognitionPhrase){var ph=(ke?w.e.split(/[\/,;]/).reduce(function(a,p){a.push(p.trim(),p.replace(/\(.*\)/,'').trim());return a},[]):[w.k]).filter(function(x,i,a){return x&&a.indexOf(x)==i});r.phrases=ph.map(function(x){return new SpeechRecognitionPhrase(x,5)})}}catch(x){}S.rec=r;S.ls=1;S.err='';S.rt=0;
- r.interimResults=true;var lang=ke?'en':'ko',exp=ke?w.e:w.k,IT=0,fin=function(g,txt){clearTimeout(IT);S.ls=0;S.heard=txt;try{r.stop()}catch(x){}if(g.r=='unsure'){S.err='Almost. Say it again.';rc();return}answer(g.r=='ok',0)};
+ r.interimResults=true;var lang=ke?'en':'ko',exp=ke?w.e:w.k,IT=0,fin=function(g,txt){clearTimeout(IT);S.ls=0;S.heard=(g.r=='ok'&&g.v)?g.v:txt;try{r.stop()}catch(x){}if(g.r=='unsure'){S.err='Almost. Say it again.';rc();return}answer(g.r=='ok',0)};
  r.onresult=function(e){var R=e.results[Math.min(e.resultIndex||0,e.results.length-1)],A=[];for(var i=0;i<R.length;i++)A.push({t:R[i].transcript,c:R[i].confidence});var g=VM.judge(exp,A,lang,{interim:!R.isFinal});if(!R.isFinal){var lv=document.getElementById('vlive');if(lv)lv.textContent=A[0].t;clearTimeout(IT);if(g.r=='ok')IT=setTimeout(function(){if(S.ls&&!S.res)fin(g,g.heard)},450);return}fin(g,A[0].t)};
  r.onerror=function(e){if(e.error=='no-speech'&&S.rt<3)return;if(e.error=='not-allowed'||e.error=='service-not-allowed')S.blk=1;S.ls=0;S.err=(e.error=='not-allowed'||e.error=='service-not-allowed')?'Mic blocked. Allow mic access (needs https or localhost), or use self-check.':e.error=='audio-capture'?'No microphone found, or another app is using it.':e.error=='network'?'No internet. Speech recognition needs a connection.':'Did not hear you. Try again.';if(!S.res)rc()};
  r.onend=function(){if(S.ls&&!S.res){if(S.rt<3&&S.rec===r){S.rt++;try{r.start();return}catch(x){}}S.ls=0;S.err='Did not hear you. Try again.';rc()}};r.start();rc()}catch(x){S.nm=1;S.ls=0;rc()}}
