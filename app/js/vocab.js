@@ -6,8 +6,13 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 function dk(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
 function today(){return dk(new Date())}
 function norm(s){return String(s||'').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'')}
-/* English match for Mic: heard '2 go' / 'two go' = 'to go'; '4' = 'for'; leading 'to' ignored. */
-function en(s){return norm(String(s||'').toLowerCase().replace(/\b(2|two|too)\b/g,'to').replace(/\b4\b/g,'for').replace(/\b1\b/g,'one').replace(/^\s*to\s+(?=\S)/,''))}
+/* English match for Mic: compares the heard words with the vocab answer, not letter by letter.
+   Digits become words (2 -> two) and words that sound the same are treated as one (to/too/two, for/four, one/won ...).
+   A leading 'to' is ignored, so 'go' = 'to go'. Works for every word in the vocab list, also the ones you add later. */
+var NW=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'],TN=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'],
+HM={too:'to',two:'to',fore:'for',four:'for',won:'one',ate:'eight',know:'no',write:'right',sea:'see',son:'sun',here:'hear',their:'there',weak:'week',wait:'weight',meet:'meat',road:'rode',flour:'flower',hour:'our',new:'knew',sale:'sail',tale:'tail',time:'thyme',bare:'bear',dear:'deer',eye:'i',oh:'owe',by:'buy',be:'bee',wood:'would',whole:'hole',sight:'site',peace:'piece',plain:'plane',steal:'steel',wear:'where',which:'witch'};
+function nw(n){n=+n;return n<20?NW[n]:n<100?TN[(n/10)|0]+(n%10?' '+NW[n%10]:''):String(n)}
+function en(s){var w=String(s||'').toLowerCase().replace(/\d+/g,function(m){return ' '+nw(m)+' '}).split(/[^a-z]+/).filter(Boolean).map(function(x){return HM[x]||x});if(w.length>1&&w[0]=='to')w.shift();return w.join('')}
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
 var SEED=[['Places',[['사무실','sa-mu-sil','office'],['공장','gong-jang','factory'],['병원','byeong-won','hospital'],['시장','si-jang','market'],['학교','hak-gyo','school'],['식당','sik-dang','restaurant'],['은행','eun-haeng','bank'],['집','jip','house']]],
 ['Greetings',[['안녕하세요','an-nyeong-ha-se-yo','hello'],['감사합니다','gam-sa-ham-ni-da','thank you'],['죄송합니다','joe-song-ham-ni-da','I am sorry'],['네','ne','yes'],['아니요','a-ni-yo','no'],['잘 부탁합니다','jal bu-tak-ham-ni-da','please take care of me']]],
@@ -58,7 +63,7 @@ var AT=0;
 function amic(){clearTimeout(AT);var n=0;(function go(){if(!SR||V.s.mode!='mic'||!on8()||S.open||S.ls||S.res||S.fl||S.nm||S.blk||S.err||!cur()||document.hidden)return;if(syn&&syn.speaking&&n++<30){AT=setTimeout(go,150);return}AT=setTimeout(function(){if(V.s.mode=='mic'&&on8()&&!S.open&&!S.ls&&!S.res&&!S.fl&&!S.nm&&!S.blk&&cur())mic()},300)})()}
 document.addEventListener('click',function(){setTimeout(amic,80)});
 document.addEventListener('visibilitychange',function(){if(document.hidden){if(S.ls)clr()}else setTimeout(amic,300)});
-function mic(){var w=cur();if(!w||S.ls)return;S.blk=0;try{var r=new SR();var ke=V.s.dir=='ke';r.lang=ke?'en-US':'ko-KR';r.maxAlternatives=5;S.rec=r;S.ls=1;S.err='';S.rt=0;
+function mic(){var w=cur();if(!w||S.ls)return;S.blk=0;try{var r=new SR();var ke=V.s.dir=='ke';r.lang=ke?'en-US':'ko-KR';r.maxAlternatives=5;try{if('phrases' in r&&window.SpeechRecognitionPhrase){var ph=(ke?w.e.split(/[\/,;]/).reduce(function(a,p){a.push(p.trim(),p.replace(/\(.*\)/,'').trim());return a},[]):[w.k]).filter(function(x,i,a){return x&&a.indexOf(x)==i});r.phrases=ph.map(function(x){return new SpeechRecognitionPhrase(x,5)})}}catch(x){}S.rec=r;S.ls=1;S.err='';S.rt=0;
  r.interimResults=true;var hit=function(x){if(ke)return w.e.split(/[\/,;]/).some(function(p){return en(p)==en(x)||en(p.replace(/\(.*\)/,''))==en(x)});return norm(x)==norm(w.k)};
  r.onresult=function(e){var R=e.results[0],fin=R.isFinal;if(!fin){var lv=document.getElementById('vlive');if(lv)lv.textContent=R[0].transcript;if(!hit(R[0].transcript))return}var t=[];for(var i=0;i<R.length;i++)t.push(R[i].transcript);S.ls=0;S.heard=t[0];try{r.stop()}catch(x){}answer(t.some(hit),0)};
  r.onerror=function(e){if(e.error=='no-speech'&&S.rt<3)return;if(e.error=='not-allowed'||e.error=='service-not-allowed')S.blk=1;S.ls=0;S.err=(e.error=='not-allowed'||e.error=='service-not-allowed')?'Mic blocked. Allow mic access (needs https or localhost), or use self-check.':e.error=='audio-capture'?'No microphone found, or another app is using it.':e.error=='network'?'No internet. Speech recognition needs a connection.':'Did not hear you. Try again.';if(!S.res)rc()};
