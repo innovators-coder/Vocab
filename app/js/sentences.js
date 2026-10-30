@@ -325,6 +325,12 @@ function knum(s){var o='',i=0,jn=0,c,m,u,r;while(i<s.length){c=s.charAt(i);if(jn
 function nrm(t){return knum(String(t).replace(/\[[^\]]*\]/g,' ').replace(/[^가-힣0-9]/g,'')).replace(/(\d{1,6})만/g,function(m,d){return String(+d*1e4)})}
 /* every number in the line must be heard, in order, as the same whole number (25 is not 5) */
 function nmis(ns,tr){var h=tr.match(/\d+/g)||[],k=0,i,j;for(i=0;i<ns.length;i++){for(j=k;j<h.length&&h[j]!=ns[i];j++);if(j>=h.length)return true;k=j+1}return false}
+/* Strict line check: the heard text must match the line syllable by syllable. Blanks [ ] / ___ take any words. Missing, extra or wrong syllables count as 1 each. */
+function kpat(l){var P=[];String(l).split(/\[[^\]]*\]|_{2,}/).forEach(function(p,k){if(k&&P[P.length-1]!='*')P.push('*');nrm(p).split('').forEach(function(c){P.push(c)})});return P}
+function kd(P,s){var m=P.length,n=s.length,I=1e9,d=[],i,j,c;for(i=0;i<=m;i++){d[i]=[];for(j=0;j<=n;j++)d[i][j]=I}d[0][0]=0;for(j=1;j<=n;j++)d[0][j]=j;
+ for(i=1;i<=m;i++)for(j=0;j<=n;j++){if(P[i-1]=='*'){d[i][j]=j?Math.min(d[i][j-1],d[i-1][j-1]):I}else{c=Math.min(I,d[i-1][j]+1);if(j)c=Math.min(c,d[i][j-1]+1,d[i-1][j-1]+(P[i-1]==s.charAt(j-1)?0:1));d[i][j]=c}}return Math.min(d[m][n],I)}
+function kdec(ln,cands){var P=kpat(ln),t=P.join('').replace(/\*/g,''),ns=t.match(/\d+/g)||[],best=99;cands.forEach(function(x){var tr=nrm(x),d;if(!tr)return;if(!t)d=tr.length>=2?0:99;else if(nmis(ns,tr))d=99;else if(P.indexOf('*')<0&&tr.length>t.length&&tr.length%t.length==0&&tr==new Array(tr.length/t.length+1).join(t))d=0;else d=kd(P,tr);if(d<best)best=d});return best}
+function kal(ln,miss){return (kpat(ln).filter(function(c){return c!='*'}).length>=14?1:0)+(miss>=3?1:0)}
 function lcs(a,b){var d=[],i,j;for(i=0;i<=a.length;i++){d[i]=[];for(j=0;j<=b.length;j++)d[i][j]=!i||!j?0:a[i-1]==b[j-1]?d[i-1][j-1]+1:Math.max(d[i-1][j],d[i][j-1])}return d[a.length][b.length]}
 /*KN-END*/
 function kic(n,z){return window.skSI?window.skSI(n,z):''}
@@ -332,12 +338,17 @@ function ms(t){var e=document.getElementById('ik-rps');if(e)e.innerHTML=t}
 function rs(t,c){var e=document.getElementById('ik-rpr');if(e){e.textContent=t;e.className=c||''}}
 function rpPz(){var e=document.getElementById('ik-rpp'),I=window.skSI;if(e&&I)e.innerHTML=RPz?I('play'):I('pause')}
 function rpHTML(){var I=window.skSI||function(){return''};return'<div class="sk dp"><div class="vp dbar" id="ik-rpb"><div class="dst"><b id="ik-rps">가 is asking…</b><span id="ik-rpn"></span></div><div class="dtx kr" id="ik-rpt" lang="ko"></div><div id="ik-rpr"></div><div class="vrow dbt"><button type="button" class="vbtn alt" data-ik="rprev" aria-label="Previous">'+I('prev')+'</button><button type="button" class="vbtn" id="ik-rpp" data-ik="rpp" aria-label="Pause">'+(RPz?I('play'):I('pause'))+'</button><button type="button" class="vbtn alt" data-ik="rnext" aria-label="Next">'+I('next')+'</button><button type="button" class="vbtn alt" data-ik="rspd" data-v="-1" aria-label="Slower">'+I('minus')+'</button><span class="dsp" id="ik-rsv">'+D.rate+'×</span><button type="button" class="vbtn alt" data-ik="rspd" data-v="1" aria-label="Faster">'+I('plus')+'</button><button type="button" class="vbtn alt" data-ik="rp" aria-label="Close">'+I('x')+'</button></div></div></div>'}
-function listen(i,my,miss){if(my!=tok)return;var t=nrm(D.lines[i].k),ns=t.match(/\d+/g)||[],al=(D.lines[i].k.match(/\[[^\]]*\]|_{2,}/g)||[]).length*6+2,r=new SR(),ok=0;REC=r;r.lang='ko-KR';try{if('phrases' in r&&window.SpeechRecognitionPhrase){r.phrases=D.lines[i].k.split(/\[[^\]]*\]|_{2,}/).map(function(x){return x.replace(/[.,?!]/g,'').trim()}).filter(function(x){return x.length>=2}).map(function(x){return new SpeechRecognitionPhrase(x,5)})}}catch(x){}r.continuous=true;r.interimResults=true;r.maxAlternatives=3;
- r.onresult=function(e){if(ok||my!=tok)return;var b=0,n,a,h,last=e.results[e.results.length-1],fin=!!(last&&last.isFinal);var tx0=document.getElementById('ik-rpt');if(tx0&&last)tx0.textContent=last[0].transcript;for(n=0;n<e.results.length;n++){h=e.results[n];for(a=0;a<h.length;a++){var tr=nrm(h[a].transcript);b=Math.max(b,t?(nmis(ns,tr)?0:lcs(tr,t)/Math.max(t.length,tr.length-al)):(tr.length>=2?1:0))}}
-  if(b>=(fin?(miss>=3?.6:.75):.85)){ok=1;rs('✓ Good!','ok');r.onend=null;try{r.abort()}catch(x){}if(REC===r)REC=null;TM=setTimeout(function(){rpStep(i+1,my)},400)}else if(fin){miss++;rs('✗ Not quite. Try again.','bad')}};
+function listen(i,my,miss){if(my!=tok)return;var ln=D.lines[i].k,r=new SR(),ok=0,NQ=0,IT=0;REC=r;r.lang='ko-KR';try{if('phrases' in r&&window.SpeechRecognitionPhrase){r.phrases=ln.split(/\[[^\]]*\]|_{2,}/).map(function(x){return x.replace(/[.,?!]/g,'').trim()}).filter(function(x){return x.length>=2}).map(function(x){return new SpeechRecognitionPhrase(x,5)})}}catch(x){}r.continuous=true;r.interimResults=true;r.maxAlternatives=3;
+ function good(c){ok=1;clearTimeout(NQ);clearTimeout(IT);rs(c?'✓ Good (close enough)':'✓ Good!','ok');r.onend=null;try{r.abort()}catch(x){}if(REC===r)REC=null;TM=setTimeout(function(){rpStep(i+1,my)},400)}
+ function bad(){NQ=0;if(ok||my!=tok)return;miss++;rs('✗ Not quite. Try again.','bad')}
+ r.onresult=function(e){if(ok||my!=tok)return;clearTimeout(NQ);NQ=0;clearTimeout(IT);IT=0;var R=e.results,last=R[R.length-1],fin=!!(last&&last.isFinal),a,n,C=[],tx0=document.getElementById('ik-rpt');
+  if(tx0)tx0.textContent=Array.prototype.map.call(R,function(x){return x[0].transcript}).join(' ');
+  for(a=0;a<3;a++){var q='';for(n=0;n<R.length;n++)q+=(R[n][a]||R[n][0]).transcript+' ';C.push(q)}
+  var b=kdec(ln,C),al=kal(ln,miss);
+  if(fin){if(b<=al)good(b>0);else NQ=setTimeout(bad,1300)}else if(b==0)IT=setTimeout(function(){good(0)},700)};
  r.onerror=function(e){if(e.error=='not-allowed'||e.error=='service-not-allowed'){if(typeof toast=='function')toast('Please allow the microphone.');stop()}};
- r.onend=function(){if(ok||my!=tok)return;TM=setTimeout(function(){listen(i,my,miss)},300)};
- var tx1=document.getElementById('ik-rpt');if(tx1)tx1.textContent='';rs('','');ms(kic('mic',16)+' Your turn: say it');try{r.start()}catch(x){}}
+ r.onend=function(){if(ok||my!=tok)return;if(IT){clearTimeout(IT);IT=0;good(0);return}if(NQ){clearTimeout(NQ);bad()}TM=setTimeout(function(){listen(i,my,miss)},300)};
+ var tx1=document.getElementById('ik-rpt');if(tx1)tx1.textContent='';if(!miss)rs('','');ms(kic('mic',16)+' Your turn: say it');try{r.start()}catch(x){}}
 function rpStep(i,my){if(my!=tok)return;var L=D.lines;while(i<L.length&&!L[i].k.trim())i++;
  if(i>=L.length){RPon=false;RV={};playing=false;PL=-1;NX=null;rr();window.scrollTo({top:0,behavior:'smooth'});if(typeof toast=='function')toast('Role-play done. Well done!');return}
  var l=L[i];PL=i;RPi=i;mark();rs('','');var cn=document.getElementById('ik-rpn');if(cn)cn.textContent=(i+1)+' / '+L.length;
