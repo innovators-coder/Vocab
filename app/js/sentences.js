@@ -331,6 +331,10 @@ function kd(P,s){var m=P.length,n=s.length,I=1e9,d=[],i,j,c;for(i=0;i<=m;i++){d[
  for(i=1;i<=m;i++)for(j=0;j<=n;j++){if(P[i-1]=='*'){d[i][j]=j?Math.min(d[i][j-1],d[i-1][j-1]):I}else{c=Math.min(I,d[i-1][j]+1);if(j)c=Math.min(c,d[i][j-1]+1,d[i-1][j-1]+(P[i-1]==s.charAt(j-1)?0:1));d[i][j]=c}}return Math.min(d[m][n],I)}
 function kdec(ln,cands){var P=kpat(ln),t=P.join('').replace(/\*/g,''),ns=t.match(/\d+/g)||[],best=99;cands.forEach(function(x){var tr=nrm(x),d;if(!tr)return;if(!t)d=tr.length>=2?0:99;else if(nmis(ns,tr))d=99;else if(P.indexOf('*')<0&&tr.length>t.length&&tr.length%t.length==0&&tr==new Array(tr.length/t.length+1).join(t))d=0;else d=kd(P,tr);if(d<best)best=d});return best}
 function kal(ln,miss){return (kpat(ln).filter(function(c){return c!='*'}).length>=14?1:0)+(miss>=3?1:0)}
+/* Android Chrome often returns every update as a new result that already holds the whole sentence so far (네 / 네 알겠습니다 / 네 알겠습니다 ...). Chunked results must be joined; cumulative ones must not. */
+function kmerge(R,a){var g=[],n,t,k,L;for(n=0;n<R.length;n++){t=(R[n][a]||R[n][0]).transcript;k=nrm(t);if(!k)continue;L=g[g.length-1];if(L&&k.indexOf(L.k)==0)g[g.length-1]={t:t,k:k};else if(L&&L.k.indexOf(k)==0)continue;else g.push({t:t,k:k})}return g.map(function(x){return x.t}).join(' ')}
+function kcands(R){var C=[],a,n,x;for(a=0;a<3;a++){x=kmerge(R,a);if(x)C.push(x)}for(n=Math.max(0,R.length-6);n<R.length;n++)for(a=0;a<3;a++)if(R[n][a])C.push(R[n][a].transcript);return C}
+function kinc(ln,txt){var P=kpat(ln),t=P.join(''),tr=nrm(txt);return P.indexOf('*')<0&&tr.length>0&&tr.length<t.length&&t.indexOf(tr)==0}
 function lcs(a,b){var d=[],i,j;for(i=0;i<=a.length;i++){d[i]=[];for(j=0;j<=b.length;j++)d[i][j]=!i||!j?0:a[i-1]==b[j-1]?d[i-1][j-1]+1:Math.max(d[i-1][j],d[i][j-1])}return d[a.length][b.length]}
 /*KN-END*/
 function kic(n,z){return window.skSI?window.skSI(n,z):''}
@@ -342,10 +346,9 @@ function listen(i,my,miss){if(my!=tok)return;var ln=D.lines[i].k,r=new SR(),ok=0
  function good(c){ok=1;clearTimeout(NQ);clearTimeout(IT);rs(c?'✓ Good (close enough)':'✓ Good!','ok');r.onend=null;try{r.abort()}catch(x){}if(REC===r)REC=null;TM=setTimeout(function(){rpStep(i+1,my)},400)}
  function bad(){NQ=0;if(ok||my!=tok)return;miss++;rs('✗ Not quite. Try again.','bad')}
  r.onresult=function(e){if(ok||my!=tok)return;clearTimeout(NQ);NQ=0;clearTimeout(IT);IT=0;var R=e.results,last=R[R.length-1],fin=!!(last&&last.isFinal),a,n,C=[],tx0=document.getElementById('ik-rpt');
-  if(tx0)tx0.textContent=Array.prototype.map.call(R,function(x){return x[0].transcript}).join(' ');
-  for(a=0;a<3;a++){var q='';for(n=0;n<R.length;n++)q+=(R[n][a]||R[n][0]).transcript+' ';C.push(q)}
+  var dt=kmerge(R,0);if(tx0)tx0.textContent=dt;C=kcands(R);
   var b=kdec(ln,C),al=kal(ln,miss);
-  if(fin){if(b<=al)good(b>0);else NQ=setTimeout(bad,1300)}else if(b==0)IT=setTimeout(function(){good(0)},700)};
+  if(fin){if(b<=al)good(b>0);else NQ=setTimeout(bad,kinc(ln,dt)?3500:1300)}else if(b==0)IT=setTimeout(function(){good(0)},700)};
  r.onerror=function(e){if(e.error=='not-allowed'||e.error=='service-not-allowed'){if(typeof toast=='function')toast('Please allow the microphone.');stop()}};
  r.onend=function(){if(ok||my!=tok)return;if(IT){clearTimeout(IT);IT=0;good(0);return}if(NQ){clearTimeout(NQ);bad()}TM=setTimeout(function(){listen(i,my,miss)},300)};
  var tx1=document.getElementById('ik-rpt');if(tx1)tx1.textContent='';if(!miss)rs('','');ms(kic('mic',16)+' Your turn: say it');try{r.start()}catch(x){}}
