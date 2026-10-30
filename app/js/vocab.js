@@ -21,7 +21,7 @@ var CT=[[/\bgonna\b/g,'going to'],[/\bwanna\b/g,'want to'],[/\bgotta\b/g,'got to
 function lev(a,b){var m=a.length,n=b.length,d=[],i,j;for(i=0;i<=m;i++){d[i]=[i]}for(j=1;j<=n;j++)d[0][j]=j;for(i=1;i<=m;i++)for(j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]==b[j-1]?0:1));return d[m][n]}
 function eq(a,b){return a.length==b.length&&a.every(function(x,i){return x==b[i]})}
 var en={
- base:function(t){t=String(t||'').toLowerCase().replace(/[\u2018\u2019\u00b4`]/g,"'").replace(/(\d),(?=\d{3}\b)/g,'$1').replace(/(\d)\.(\d)/g,'$1 point $2').replace(/%/g,' percent ');CT.forEach(function(c){t=t.replace(c[0],c[1])});return t.replace(/[^\p{L}\p{N}\s]/gu,' ').split(/\s+/).filter(Boolean)},
+ base:function(t){t=String(t||'').toLowerCase().replace(/[\u2018\u2019\u00b4`]/g,"'").replace(/(\d),(?=\d{3}\b)/g,'$1').replace(/(\d)\.(\d)/g,'$1 point $2').replace(/%/g,' percent ');CT.forEach(function(c){t=t.replace(c[0],c[1])});return t.replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/(\d)(?!(?:st|nd|rd|th)\b)(\p{L})/gu,'$1 $2').replace(/(\p{L})(\d)/gu,'$1 $2').split(/\s+/).filter(Boolean)},
  nums:function(a){var o=[];a.forEach(function(x){var m;if(/^\d+$/.test(x)){var s=nw(+x);if(s&&x.length<10){o.push.apply(o,s.split(' '));return}}else if((m=/^(\d+)(st|nd|rd|th)$/.exec(x))&&nw(+m[1])){var p=nw(+m[1]).split(' ');p[p.length-1]=ordw(p[p.length-1]);o.push.apply(o,p);return}o.push(x)});return o.filter(function(x,i,r){return !(x=='and'&&i>0&&/^(hundred|thousand|million)$/.test(r[i-1])&&i<r.length-1)})},
  canon:function(a){return a.map(function(x){return HOM[x]||x})},
  plural:function(a,b){return a!=b&&(a+'s'==b||b+'s'==a||a+'es'==b||b+'es'==a||(a.slice(-1)=='y'&&a.slice(0,-1)+'ies'==b)||(b.slice(-1)=='y'&&b.slice(0,-1)+'ies'==a))},
