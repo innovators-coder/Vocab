@@ -353,7 +353,7 @@ document.addEventListener('click',function(e){if(!on7())return;if(window.__dgT&&
  else if(a=='close'){OC=null;rr()}
  else if(a=='reset'){if(!b.dataset.c){b.dataset.c='1';b.textContent='Tap again to confirm';setTimeout(function(){if(b.isConnected){delete b.dataset.c;b.textContent='Reset to sample'}},4000)}else{stop();D.lines=mk(DEF);EI=-1;OC=null;UN=null;sv();rr();if(typeof toast=='function')toast('Intro reset to sample.',2000)}}});
 /* long press + drag to reorder lines */
-var dgT=null,dgP=null,dg=null,dgRaf=0;
+var dgT=null,dgP=null,dg=null,dgRaf=0; 
 function dgRows(){return [].slice.call(document.querySelectorAll('#list .ik-cr'))}
 function dgCancelP(){clearTimeout(dgT);dgT=null;dgP=null}
 function dgDown(x,y,t){dgCancelP();if(!on7()||D.pv||!t||!t.closest)return;var r=t.closest('#list .ik-cr');if(!r||t.closest('button'))return;dgP={i:+r.dataset.i,x:x,y:y};dgT=setTimeout(function(){dgT=null;if(dgP){var p=dgP;dgP=null;dgBegin(p)}},380)}
