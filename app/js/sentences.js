@@ -288,8 +288,8 @@ window.introList=function(){
  if(!D.pv&&PBO)h+=pbHTML();
  if(D.pv){h+=paperLines()}else D.lines.forEach(function(l,i){if(EI!=i){h+=rowHTML(l,i);return}h+='<div class="ik-l'+(PL==i?' on':'')+'" data-i="'+i+'"><div class="ik-h"><span class="ik-n">'+(i+1)+'</span><button type="button" class="ik-ic pl" data-ik="play" data-i="'+i+'" aria-label="Play line '+(i+1)+'">'+kic('play',16)+'</button><span class="ik-sp"></span><button type="button" class="ik-ic" data-ik="up" data-i="'+i+'" aria-label="Move up"'+(i==0?' disabled':'')+'>'+kic('up',16)+'</button><button type="button" class="ik-ic" data-ik="down" data-i="'+i+'" aria-label="Move down"'+(i==D.lines.length-1?' disabled':'')+'>'+kic('down',16)+'</button><button type="button" class="ik-ic" data-ik="del" data-i="'+i+'" aria-label="Delete line">'+kic('trash',16)+'</button></div>'
   +'<input type="text" class="ik-s" data-f="s" data-i="'+i+'" lang="ko" value="'+esc(l.s||'')+'" placeholder="Speaker (가 / 나, optional)">'
-  +'<input type="text" class="ik-k" data-f="k" data-i="'+i+'" lang="ko" value="'+esc(l.k)+'" placeholder="한국어">'
-  +'<div class="ik-ch">'+chips(i)+'</div>'+pop(i)
+  +'<input type="text" class="ik-k" data-f="k" data-i="'+i+'" lang="ko" value="'+esc(l.k)+'" placeholder="Write the whole sentence here (Korean)">'
+  +'<div class="sglab" style="margin:6px 2px 0;font-size:12px;opacity:.7">Or tap one word below to replace only that word</div><div class="ik-ch">'+chips(i)+'</div>'+pop(i)
   +'<input type="text" class="ik-r" data-f="r" data-i="'+i+'" value="'+esc(l.r)+'" placeholder="Romanization (auto, you can edit)">'
   +'<input type="text" class="ik-e" data-f="e" data-i="'+i+'" value="'+esc(l.e)+'" placeholder="Meaning (auto, you can edit)">'+'<input type="text" class="ik-nt" data-f="n" data-i="'+i+'" value="'+esc(l.n||'')+'" placeholder="Note (optional, not read aloud)">'+'<button type="button" class="ik-b ik-pri" data-ik="done" style="width:100%;margin-top:8px">Done</button></div>'});
  if(!D.lines.length)h+='<p class="note">No lines yet. Tap + Add line.</p>';
