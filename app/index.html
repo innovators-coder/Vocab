@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>EPS-TOPIK Trainer · Hangul</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#e9eee8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1626" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EPS Trainer">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/patches.css">
+<script>try{var _b=localStorage.getItem("eps-bg");if(_b)document.documentElement.setAttribute("data-bg",_b)}catch(e){}</script>
+</head>
+<body>
+<main>
+  <div id="hdr"><div class="top"><span style="font:700 17px var(--sans);color:var(--jade);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">EPS-TOPIK Trainer</span><span class="tbtns"><button id="bell" aria-label="Notifications"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="bdg" id="bellb" hidden></span></button><button id="gear" aria-label="Settings">⚙</button><button id="menu" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></span><div id="menup" class="setp" role="menu" hidden><button class="mi" data-t="1">Vowels</button><button class="mi" data-t="0">Consonants</button><button class="mi" data-t="2">Lessons</button><button class="mi" data-t="3">Basics</button><button class="mi" data-t="6">Sentences</button><button class="mi" data-t="7">Intro</button><button class="mi" data-t="9">Skill Test</button><button class="mi" data-t="4">Conjugate</button></div><div id="setp" class="setp" hidden><div class="srow"><span>Romanization</span><button id="romsw" class="sw2" role="switch" aria-checked="true" aria-label="Romanization"></button></div><div class="srow"><span>Theme</span><button id="theme" aria-label="Change theme">Theme</button></div><div class="srow"><span>Season</span><button id="seab" aria-label="Season effect">Off</button></div><div class="srow"><span>Color</span><button id="grb" aria-label="Color style">Mint</button></div><div class="srow"><span>Background</span><button id="bgb" aria-label="Background color">Default</button></div><div class="srow"><span>Backup</span><span><button id="expb">Export</button> <button id="impb">Import</button></span></div><p class="note" style="margin:2px 0 6px;font-size:12px">Export saves a small .json file of your progress to your Downloads. It only contains your study data. Import it later to restore.</p><input type="file" id="impf" accept=".json,application/json" hidden><div class="srow"><span>Progress</span><button id="rstall" aria-label="Reset all progress" style="color:var(--seal)">Reset all</button></div><p class="note" style="margin:2px 0 4px;font-size:12px">Reset all asks if you want to export a backup file first.</p><div class="srow"><span>About</span><a href="../" target="_blank" rel="noopener" style="color:var(--jade);font-weight:600">How it works</a></div><p class="note" style="margin:2px 0 4px;font-size:12px">Some lessons are based on what was learned in Class AI. This app is not sponsored by or affiliated with Class AI. The other examples were created from the developer's own Korean study.</p></div></div>
+  <div id="dots" aria-hidden="true"></div></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="t1" aria-selected="true">Vowels</button>
+    <button role="tab" id="t0" aria-selected="false">Consonants</button>
+    <button role="tab" id="t2" aria-selected="false">Lessons</button>
+    <button role="tab" id="t3" aria-selected="false">Basics</button>
+    <button role="tab" id="t4" aria-selected="false">Conjugate</button>
+    <button role="tab" id="t6" aria-selected="false">Sentences</button>
+    <button role="tab" id="t7" aria-selected="false">Intro</button>
+    <button role="tab" id="t8" aria-selected="false">Vocab</button>
+    <button role="tab" id="t9" aria-selected="false">Skill Test</button>
+  </div>
+  <h1 id="ph">Hangul</h1>
+  <p class="sub" id="ps">Tap a letter. Watch how it is written. Say it out loud.</p>
+  <div class="bar"><i id="fill"></i></div>
+  <div class="cnt" id="cnt"></div>
+  <div id="list"></div>
+</main>
+
+<canvas id="fx" aria-hidden="true"></canvas><div id="toast" role="status" aria-live="polite"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Letter detail"><div class="sw" id="sw"></div></div>
+
+<script src="js/boot.js"></script>
+<script src="data/hangul.js"></script>
+<script src="data/words.js"></script>
+<script src="data/lessons.js"></script>
+<script src="js/app.js"></script>
+<script src="js/sheet-nav.js"></script>
+<script src="js/continue-lesson.js"></script>
+<script src="data/sentences.js"></script>
+<script src="js/sentences.js"></script>
+<script src="js/desktop-nav.js"></script>
+<script src="js/paper-bg.js"></script>
+<script src="js/vocab.js"></script>
+<script src="js/skill-test.js"></script>
+<script src="js/pwa.js"></script>
+</body>
+</html>
