@@ -245,7 +245,9 @@ function sv(){try{localStorage.setItem(K,JSON.stringify(D))}catch(x){}}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 var amT;function am(t){clearTimeout(amT);var k=t.value,i=+t.dataset.i,l=t.closest('.ik-l'),ei=l&&l.querySelector('.ik-e');if(!ei||(D.lines[i].em&&ei.value.trim()))return;amT=setTimeout(function(){var kk=k.trim(),h='';D.lines.forEach(function(x,j){if(j!=i&&x.k.trim()==kk&&x.e)h=x.e});PB.forEach(function(g){g[1].forEach(function(x){if(x[0]==kk)h=x[2]})});
  function ap(s){if(!s||!D.lines[i]||D.lines[i].k!==k||!document.body.contains(ei))return;if(D.lines[i].em&&ei.value.trim())return;ei.value=s;D.lines[i].e=s;D.lines[i].em=0;sv()}
- if(h)ap(h);else if(window.__mean)window.__mean(kk.replace(/\[[^\]]*\]|_{2,}/g,'___'),ap)},700)}
+ var bks=kk.match(/\[[^\]]*\]|_{2,}/g)||[];
+function fillB(s){if(!bks.length||!s)return ap(s);var n=0;ap(String(s).replace(/_{2,}|\.{2,}|…/g,function(){var b=bks[n++];return b?(b.charAt(0)=='['?'('+b.slice(1,-1)+')':'___'):'___'}))}
+if(h)ap(h);else if(window.__mean)window.__mean(kk.replace(/\[[^\]]*\]|_{2,}/g,'___'),fillB)},700)}
 function ar(k){try{return window.__rom?String(k).split(/(\[[^\]]*\]|_{2,})/).map(function(p,j){if(j%2)return p;var m=p.match(/^(\s*)([\s\S]*?)(\s*)$/);return m[2]?m[1]+window.__rom(m[2])+m[3]:p}).join(''):''}catch(x){return ''}}
 function hb(c){var n=(c||'').charCodeAt(0)-0xAC00;return n>=0&&n<11172&&n%28!==0}
 var PR={'이':['이','가'],'가':['이','가'],'은':['은','는'],'는':['은','는'],'을':['을','를'],'를':['을','를'],'이에요':['이에요','예요'],'예요':['이에요','예요']};
