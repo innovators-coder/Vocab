@@ -1,5 +1,5 @@
 // Bump VERSION whenever you upload new files so old caches get cleaned up.
-const VERSION = 'eps-trainer-v12';
+const VERSION = 'eps-trainer-v13';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest',
   'css/style.css', 'css/patches.css',
