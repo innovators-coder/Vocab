@@ -1,4 +1,0 @@
-(function(){var B=[["", "Default", "#e9eee8"], ["yellow", "Yellow paper", "#fbf1a8"], ["cream", "Cream", "#f3ecd8"], ["sky", "Sky", "#e3eef8"], ["rose", "Rose", "#f6e4e8"], ["lav", "Lavender", "#ebe6f6"], ["gray", "Gray", "#e6e6e6"], ["white", "White / Black", "#ffffff"]],b=document.getElementById('bgb'),r=document.documentElement,v='';try{v=localStorage.getItem('eps-bg')||''}catch(x){}
-function idx(k){for(var i=0;i<B.length;i++)if(B[i][0]===k)return i;return 0}
-function set(k){var i=idx(k),e=B[i];if(e[0])r.setAttribute('data-bg',e[0]);else r.removeAttribute('data-bg');b.innerHTML='<i style="display:inline-block;width:12px;height:12px;border-radius:50%;border:1px solid var(--line);background:'+e[2]+';margin-right:6px;vertical-align:-1px"></i>'+e[1];try{if(e[0])localStorage.setItem('eps-bg',e[0]);else localStorage.removeItem('eps-bg')}catch(x){}v=e[0]}
-b.onclick=function(ev){ev.stopPropagation();set(B[(idx(v)+1)%B.length][0])};set(v)})();
